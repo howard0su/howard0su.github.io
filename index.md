@@ -1,5 +1,3 @@
-# Howard's Blog
-
 ## What limits the network performance of PlutoSDR
 
 I did some performance testing after I successfully enable the 1000M Ethernet on Zynq7010. The Ethernet is connected as eth0:
