@@ -1,19 +1,3 @@
-
-<script type="text/javascript">
-  var _paq = window._paq = window._paq || [];
-  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-  _paq.push(['trackPageView']);
-  _paq.push(['enableLinkTracking']);
-  (function() {
-    var u="https://howard0su.matomo.cloud/";
-    _paq.push(['setTrackerUrl', u+'matomo.php']);
-    _paq.push(['setSiteId', '1']);
-    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-    g.type='text/javascript'; g.async=true; g.src='//cdn.matomo.cloud/howard0su.matomo.cloud/matomo.js'; s.parentNode.insertBefore(g,s);
-  })();
-</script>
-
-
 ## What limits the network performance of PlutoSDR
 
 I did some performance testing after I successfully enable the 1000M Ethernet on Zynq7010. The Ethernet is connected as eth0:
@@ -60,4 +44,4 @@ So I decided to get more details on what time is spending inside the Linux Kerne
 
 Enough for today. I will do more investigation later this week.
 
-![https://howard0su.matomo.cloud/matomo.php?idsite=1&amp;rec=1]()
+![](https://howard0su.matomo.cloud/matomo.php?idsite=1&amp;rec=1)
