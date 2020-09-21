@@ -42,4 +42,4 @@ So I decided to get more details on what time is spending inside the Linux Kerne
 
 ![image-20200921172711633](image-20200921172711633.png)
 
-Enough for today. I will do more investigation later
+Enough for today. I will do more investigation later this week.
