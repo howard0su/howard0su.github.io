@@ -1,8 +1,10 @@
 ---
-layout: default
+layout: post
 title:  "What limits the network performance of PlutoSDR"
 date:   2020-09-21 20:14:00
-categories: PlutoSDR
+categories: [ PlutoSDR, SDR ]
+image: /asserts/images/image-20200921172711633.png
+featured: true
 ---
 
 I did some performance testing after I successfully enable the 1000M Ethernet on Zynq7010. The Ethernet is connected as eth0:
@@ -45,6 +47,6 @@ Clearly, CPU is the bottleneck. The above result is what I already enabled 2 cor
 
 So I decided to get more details on what time is spending inside the Linux Kernel. 'perf' is the command I am using to collect the information. Half of the time is spending in copy the data from userland to kernel when trying to send. And another 1/3 time is spending in a spinlock.
 
-![FlameGraph](/asserts/image-20200921172711633.png)
+![FlameGraph](/asserts/images/image-20200921172711633.png)
 
 Enough for today. I will do more investigation later this week.
