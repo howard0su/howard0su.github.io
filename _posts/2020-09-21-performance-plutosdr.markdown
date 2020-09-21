@@ -45,8 +45,6 @@ Clearly, CPU is the bottleneck. The above result is what I already enabled 2 cor
 
 So I decided to get more details on what time is spending inside the Linux Kernel. 'perf' is the command I am using to collect the information. Half of the time is spending in copy the data from userland to kernel when trying to send. And another 1/3 time is spending in a spinlock.
 
-![image-20200921172711633](image-20200921172711633.png)
+![FlameGraph](/asserts/image-20200921172711633.png)
 
 Enough for today. I will do more investigation later this week.
-
-![](https://howard0su.matomo.cloud/matomo.php?idsite=1&amp;rec=1)
