@@ -15,3 +15,6 @@ gems:
 
 #Others
 markdown: kramdown
+
+# Tracking
+google_analytics: 'UA-178539340-1'
