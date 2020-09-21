@@ -6,8 +6,8 @@ locale:       "en"
 
 # About/contact
 author:
-  name:       howard0su@gmail.com
-  url:        https://howard0su.github.io 
+  name:       Howard Su
+  url:        mailto:howard0su@gmail.com 
 
 # Gems
 gems:
