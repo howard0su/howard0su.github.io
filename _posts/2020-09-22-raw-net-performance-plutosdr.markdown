@@ -6,7 +6,7 @@ categories: [ PlutoSDR, SDR ]
 featured: true
 ---
 
-In order to better understand how the raw network performance on PlutoSDR, I decided to use iperf to run some benchmark.
+In order to better understand what the raw network performance is on PlutoSDR, I decided to use iperf to run some benchmark.
 
 I modified the defconfig in buildroot to include iperf tool in the firmware. 
 ```
@@ -67,7 +67,23 @@ TCP window size:  400 KByte (WARNING: requested  200 KByte)
 [  3]  4.0- 5.0 sec  71.5 MBytes   600 Mbits/sec
 [  3]  0.0- 5.0 sec   358 MBytes   600 Mbits/sec
 ```
+Last try, let us enable the second core:
+```
+$ iperf -c 169.254.2.35 -p 12345 -i 1 -t 5 -w 80K
+------------------------------------------------------------
+Client connecting to 169.254.2.35, TCP port 12345
+TCP window size:  160 KByte (WARNING: requested 80.0 KByte)
+------------------------------------------------------------
+[  3] local 169.254.2.53 port 35668 connected with 169.254.2.35 port 12345
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0- 1.0 sec  85.9 MBytes   720 Mbits/sec
+[  3]  1.0- 2.0 sec  85.8 MBytes   719 Mbits/sec
+[  3]  2.0- 3.0 sec  85.1 MBytes   714 Mbits/sec
+[  3]  3.0- 4.0 sec  86.0 MBytes   721 Mbits/sec
+[  3]  4.0- 5.0 sec  85.5 MBytes   717 Mbits/sec
+[  3]  0.0- 5.0 sec   428 MBytes   718 Mbits/sec
+```
 
-So the conclusion is that the current hardware with the current Linux driver, 72MB/s is what we can get most. Let's do some caculation. Each sample has two int16 I & Q. So total is 4 bytes. 72MB / 4 = 18Msps. Also in iiod, the packet size cannot be perfectly 80KB, we can only assume about 15Msps safely..
+So the current hardware with the current Linux driver, 85MB/s is maxium throughput. Let's do some caculation. Each sample has two int16 I & Q. So total is 4 bytes. 85MB / 4 = 21Msps. So in theory, we can only support up to 21Msps bandwidth.
 
 Is this good enough? Maybe I should take a look at the network driver to see if we can get. 
