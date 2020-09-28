@@ -87,3 +87,8 @@ TCP window size:  160 KByte (WARNING: requested 80.0 KByte)
 So the current hardware with the current Linux driver, 85MB/s is maxium throughput. Let's do some caculation. Each sample has two int16 I & Q. So total is 4 bytes. 85MB / 4 = 21Msps. So in theory, we can only support up to 21Msps bandwidth.
 
 Is this good enough? Maybe I should take a look at the network driver to see if we can get. 
+
+## Add additional Data with iperf3 with zerocopy
+
+I running iperf3 to try zerocopy if it gives anything better. Unfortunately, it doesn't. Using ZeroCopy only gives 5% better. //sign.
+
