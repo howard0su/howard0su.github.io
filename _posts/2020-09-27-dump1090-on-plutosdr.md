@@ -42,4 +42,4 @@ Load average: 0.32 0.18 0.06 3/73 1803
   968     1 avahi    S     3384   1%   0% avahi-daemon: running [pluto.local]
 ```
 
-Checkout the code here: https://github.com/howard0su/dump1090
+Checkout the code here: [https://github.com/howard0su/dump1090](https://github.com/howard0su/dump1090)
