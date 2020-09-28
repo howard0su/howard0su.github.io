@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Raw network performance of PlutoSDR"
+title:  "Raw network performance of PlutoSDR [Updated]"
 date:   2020-09-22 22:01:00
 categories: [ PlutoSDR, SDR ]
 featured: true
