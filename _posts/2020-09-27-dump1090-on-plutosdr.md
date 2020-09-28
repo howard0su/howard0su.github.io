@@ -9,9 +9,9 @@ Network performance is still under investigation. The discouraging part is that 
 
 I am feeling that better approach should be processing the data more on the A9 CPUs on the board instead of transferring the data to PC. One of example is that KiwiSDR architecture, which processes the high bandwidth data to a audio I/Q stream (10k bandwith) and a waterfall data (8k bandwidth).
 
-So I decided to add some small applications to the firmware to try. The first application is dump1090, which already in buildroot/package. However the version in the buildroot is only support rtlsdr. So I decided to do a small porting work to make it working.
+So I decided to add some small applications to the firmware to try. The first application is dump1090, which already in buildroot/package. However the version in the buildroot is only support rtlsdr. So I decided to do a small porting work to make it working via integrate two repos: https://github.com/MalcolmRobb/dump1090 and https://github.com/PlutoSDR/dump1090.
 
-The code change is relative simple, which costs me a morning to finish the coding. dump1090 now works both from your PC or running from PlutoSDR directly.
+The code change is relative simple, which costs me a morning to finish the porting. dump1090 now works both from your PC or running from PlutoSDR directly.
 
 ```
 Hex     Mode  Sqwk  Flight   Alt    Spd  Hdg    Lat      Long   Sig  Msgs   Ti|
