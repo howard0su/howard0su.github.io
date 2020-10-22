@@ -2,8 +2,8 @@
 layout: post
 title:  "The Signal Path of Teensy Convolution SDR"
 date:   2020-09-28 10:14:00
-categories: [ PlutoSDR, SDR ]
-featured: false
+categories: [ SDR ]
+featured: true
 ---
 
 Teensy Convolution SDR is a great project. The signal path is complex but I feel it is worth to dig out more details of it.
