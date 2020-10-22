@@ -6,7 +6,7 @@ categories: [ SDR ]
 featured: true
 ---
 
-Teensy Convolution SDR is a great project. The signal path is complex but I feel it is worth to dig out more details of it.
+Teensy Convolution SDR is a great project. The signal path is complex but I feel it is worth to dig out more details of it. You can find the project here: https://github.com/DD4WH/Teensy-ConvolutionSDR
 
 ### Stage1
 
