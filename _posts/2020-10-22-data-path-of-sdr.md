@@ -8,115 +8,112 @@ featured: true
 
 Teensy Convolution SDR is a great project. The signal path is complex but I feel it is worth to dig out more details of it.
 
-### 第一步
+### Stage1
 
-#### 输入:
+#### Input:
 
-从DMA里拿到的I2S的数据，
+Get I2S data from code through DMA.
 
-#### 输出:
+#### Output:
 
-32块，每一块是128个16位的有符号整数。一共4096个数据，一共8KB X 2
+32 Blocks, with each block 128 int16_t. In total, 4096 samples, 8KB x 2 channels.
 
-### Stage2: 归一到浮点数
+### Stage2: Normalized to Float
 
-#### 输出:
+#### Output:
 
-32块，每一块是128个16位的-1.0到1.0的浮点数。一共4096个数据，一共16KB X 2
+32 Blocks, with each block 128 float32_t between -1.0f to 1.0f. In total, 4096 samples, 16KB x 2 channels.
 
-#### 处理:
+#### Notes:
 
-1. 有一个bitnumber的处理，就是把低位的数据清0，降低ADC在LSB的干扰。
-2. arm加速的SIMD版本的API是arm_q15_to_float，同时归一化和转化成浮点数。
+1. There is a proceduce to limit bitnumber, which force 0 of N LSBs. Not sure what this is for.
+2. CMSIS DSP provides a SIMD API arm_q15_to_float to normalize to float.
 
-### Stage3: IQ平衡矫正
+### Stage3: IQ Balance Fix
 
-IQ 矫正是有两个步骤，不改变数据的格式和大小。分别矫正IQ的幅度（scale）和相位（phase）。这里有三个算法：
+IQ Balance fix contains two steps, which change the scale and the phase. There are three different algorithm implemented:
 
- 1. 手工，定义IQ_amplitude_correction_factor和IQ_phase_correction_factor去校准数据。
+ 1. Manual, the user manually config IQ_amplitude_correction_factor and IQ_phase_correction_factor.
 
- 2. Mosely算法:
+ 2. Mosely Algorithm:
 ```
 Moseley, N.A. & C.H. Slump (2006): A low-complexity feed-forward I/Q imbalance compensation algorithm. http://doc.utwente.nl/66726/1/moseley.pdf
 ```
-4. Chang算法:
+4. Chang Algorithm:
 ```
 IQ imbalance correction algorithm by Chang et al. 2010
 ```
 
-### Stage4: FS/4的频率转换
-使用一个不用乘法的算法。(有必要吗？乘法也是1个cycle）。移动中央频率到fs/4的地方。
+### Stage4: Move center freq from DC to +FS/4
+Use a fast algorithm here,
 
 ```
 Frequency translation by Fs/4 without multiplication
 Lyons (2011): chapter 13.1.2 page 646
 ```
 
-### Stage5: 计算频谱，dbm
+### Stage5: Caculate Spectrum，dbm
 
-这里用了一个优化，如果zoom=1，在频率移动之前的256个sample来计算。（这样的优化没有意义，zoom=1不是常见路径，省出来的CPU也不能做其他的事情）
+If spectrum zoom is 1, use the first 256 samples before stage 4.
 
-其实没有需要每个loop都记算频谱，完全可以若干次数据算一次的。
+### Stage6: 8x decimate
 
-### Stage6: 8倍抽取
+First do a 4x decimate, then a 2x. The bandsiwth changes to 96/8=12khz.
+CMSIS DSP API is arm_fir_decimate_f32
 
-先做一次4倍的抽取，再做一次2倍的抽取。一共8倍的抽取，采样带宽变成96/8=12khz。
-arm加速的SIMD版本的API是arm_fir_decimate_f32.
-
-#### 输出
-32块，每一块是16个浮点数的结果。总共512个数据。
+#### Output:
+32 Blocks，Each blocks is 16 float32, total 512 samples. 
 
 ### Stage7: Convolution
-将把I，Q数据组成Complex的float组，进行FFT。步骤如下：
-1. 把上一个周期的数据和当前的数据拼成一个，总共1024个数据点。每个数据点2个浮点数。
-2. 进行FFT，快速傅立叶变换，得到一个1024个数据点。
-3. 得到了一个在频域的数据
+Merge IQ into a complex_t and do the FFT convolution. 
+1. Use last loop data, merge with the current set of data. In totally 1024 samples, each sample is a complex data (im, re).
+2. FFT, 1024 bins in frequence domain
 
 ### Stage8：Autotune
-寻找最强的数据点，从频域数据中计算每个频点的信号强度（I^2+Q^2)。最强的频点就是需要切换的频率。
-这个步骤可以考率只在用户调节过频率以后进行。
+Find the highest power bins （I^2+Q^2), so the baseband can be determined.
 
 ```
 Lyons (2011): chapter 13.15 page 702
 ```
 
-### Stage9: 去除单边带，如果是解码单边带数据
-去除单边带数据，如果数据是LSB或者USB，在这个步骤去掉一个边带。
-当前代码是注释掉的，需要研究为什么。
+### Stage9: Supress single band
+If we are using SSB, supress single band.
 
 ```
 "frequency translation without multiplication" - DSP trick R. Lyons (2011))
 ```
 
 ### Stage10：FIR Filter
-使用arm_cmplx_mult_cmplx_f32，作为filter。
+Band Pass Filter in FIR.
+CMSIS DSP API is arm_cmplx_mult_cmplx_f32
 
-此filter实在初始化时候建立的，和当前band和采样率有关的一个函数。
+The filter is created when swiching the band:
 calc_cplx_FIR_coeffs (FIR_Coef_I, FIR_Coef_Q, m_NumTaps, (float32_t)bands[current_band].FLoCut, (float32_t)bands[current_band].FHiCut, (float)SR[SAMPLE_RATE].rate / DF);
 
 ### Stage11: Notch Filter
-根据notch的宽度和值，在FFT中对应的项设为0. 
+Based on notch setting (center frequence and width), clear the corresponding bins to 0.
 
 ### Stage12：iFFT
-将频域的数据重新转化成时域的数据。arm加速的SIMD版本的API是arm_cfft_f32。
+iFFT to get the data back to time domain.
+CMSIS DSP API is arm_cfft_f32.
 
-### Stage13: AGC
-自动Gain控制。AGC有多种模式；
-1. 手工GC，Gain是一个用户设定的值。
-2. 自动GC，Gain是一个计算的过程。
-最后用Gain去放大每一个sample
+### Stage13: Gain Control
+There are two algorithm here:
+1. Manual GC，Gain is a user configuration.
+2. AGC，Gain is caculated based on the current samples.
+Use Gain as a scale factor to multiply each sample.
 
-### Stage14；解码
-这一个步骤是对每一种编码模式都不同的。具体解码过程下面分开讨论。每一种的都不同。
+### Stage14； Demodulize 
+This is different for different mode. Check the next section for details.
 
 #### 输出
-256个Audio的数据，在左右两个通道。
+256 float32 data for audio, Left and Right, two channels.
 
-### Stage15：声音EQ
-根据EQ设置，生成两个FIR filter。将其filter两路左右声音数据。
-arm加速的SIMD版本的API是arm_fir_f32
+### Stage15：Audio EQ
+Based on EQ settings, generate two FIR filter, and apply filter to the audio data of two channels.
+CMSIS DSP API is arm_fir_f32.
 
-### Stage16: LMS 处理
+### Stage16: LMS NR
 
 ```
 variable-leak LMS algorithm
@@ -125,20 +122,23 @@ only one channel --> float_buffer_L --> NR --> float_buffer_R
 ```
 
 ### Stage17: Noise Blanker
-Michael Wild的算法，去noise
+Michael Wild's algorithm，noise Blanker
 
-### Stage18:　数字模式解码
-这里开始解码CW，RTTY和DCF77的数据。可以增加其他的算法比如D-Star，或者DMR。
+### Stage18:　Digit mode decode
+Will decode CW, RTTY and DCF77.
 
-### Stage19: 插值
-做2倍的插值，再做4倍的插值，总共8倍的抽取。并进行声音的放大和音量控制。arm的加速API是arm_fir_interpolate_f32和arm_scale_f32。
+### Stage19: interpolate
+8x interpolate to make audio data suitable to play. and also scale the data based on volume control.
 
-### Stage20: 声音数据产生
-声音数据需要是16位的整型数字，现在开始转换。arm的加速API是arm_fir_interpolate_f32和arm_float_to_q15。
+CMSIS DSP API is arm_fir_interpolate_f32 and arm_scale_f32。
+
+### Stage20: convert to int16
+Audio hardware requires int16, convert it here.
+CMSIS DSP API is arm_float_to_q15.
 
 
 
-## Demod的算法细节
+## Demodule Details
 
 ### AM
 ### SAM
@@ -148,52 +148,47 @@ Michael Wild的算法，去noise
 ### NFM
 ### WFM
 
-## 数字模式的算法细节
+## Digit Decode Details
 
 ### CW
 ### RTTY
 ### DCF77
 
 
+## Some caculations
 
-## 计算的数字
+### How much memory is used for memory
 
-### 内存一共用了多少？
+I2S input：4096 samples X int16 X [I.Q]
 
-输入内存：4096 samples X int16 X [I.Q]
+float input: 4096 samples X float32 X [I, Q]
 
-浮点内存: 4096 samples X float32 X [I, Q]
+FFT buffer; 1024 Samples X float 32 X [im, re]
 
-FFT内存; 1024 Samples X float 32 X [im, re]
+IFFT buffer: 1024 Samples X float 32 X [im, re]
 
-IFFT内存: 1024 Samples X float 32 X [im, re]
+audio float buffer：256 Samples X float 32 X [L, R]
 
-声音内存：256 Samples X float 32 X [L, R]
+audio output：4096 samples X int16 X [L, R]
 
-输出内存：4096 samples X int16 X [L, R]
+Float input and audio float buffer can be shared, IFFT and FFT can be shared but the current implementation doesn't.
 
-其中声音内存和浮点内存共享，IFFT和FFT内存可以共享（现在代码没有）
+### How quick for each loop
 
-### 每个循环要多快：
+The codec is running at single channel 96Khz. In order to get 32x512blocks, it took about 4/96=41ms. So each loop is about 41ms, which implies 24 loops/s.
 
-96K，采集4K数据需要4/96=41ms。每个循环需要在41ms内结束，也就是24frame/s。同时这个速度可以是UI的刷新速度。
 
-### 为什么需要抽取和插值都做2次，不一次完成？
+### Future Optimizations
 
-FIR的filter效率更好。
+#### Some FIR fitler can be static so we can save some RAM.
 
-### 优化点：所有的抽取和插值的数据结构都可以静态初始化，节省内存。
+#### Initialize float array to 0.0 can use memset(0) instead. zero in int and in float are same, all 0 in binary.
 
-### 优化点：初始化float数组为0，可以用memset，float的0和int32的0是一样的。
+#### Append the previous block logic can be simplied.
 
-### 优化点：第一个block的逻辑可以通过预先初始化保存的块来完成
+#### FFT and iFFT can reuse the buffer.
 
-### 优化点：IFFT和FFT的内存复用
-
-### 优化点：数据的归一化可以每次都做，不用等到8个块到达
-
-### 优化点：FIR filter的数据可以是静态初始化的，节省RAM
-
+#### Data normalize can be done for each block, instead of 8 blocks at a time.
 
 
 
