@@ -8,7 +8,7 @@ featured: true
 
 ---
 
-## Elecraft KX3 deep dive 他山之石，可以攻玉
+*他山之石，可以攻玉*
 
 This serial of blogs are analyzing the details of the schematic of KX3 for my personal study purpose.
 
