@@ -4,6 +4,7 @@ title:  "How to debug Pico with JLINK OB under Windows"
 date:   2023-01-22 20:14:00
 categories: [ Pico, SDR ]
 featured: true
+published: true
 ---
 
 I were using a RPI4 to write the code for Pico. It is additional effort and table space waste to have another board. So I decided to setup the development enviroment on Windows with WSL2 this afternoon. This post captured the issues and the solutions.
