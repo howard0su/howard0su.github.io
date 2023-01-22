@@ -5,7 +5,6 @@ title:  "How to debug Pico with JLINK OB under Windows"
 date:   2023-01-22 20:14:00
 categories: [ Pico, SDR ]
 featured: true
-published: true
 
 ---
 
@@ -78,4 +77,3 @@ adapter speed 1000
 ```
 
 After the settings, everything works well including RTT debug output. Nice!
-
