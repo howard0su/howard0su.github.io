@@ -3,7 +3,7 @@
 layout: post
 title:  "How to debug Pico with JLINK OB under Windows"
 date:   2023-01-22 20:14:00
-categories: [ Pico, SDR ]
+categories: [ SDR ]
 featured: true
 
 ---
@@ -20,6 +20,9 @@ I were using a RPI4 to write the code for Pico. It is additional effort and tabl
 
 ## Issue 1: Cannot run openocd as normal user
 The solution is simple to modify udev scipt. The pullze is that you have to start udev service.
+```
+sudo service udev start
+```
 
 ## Issue 2: Corext config is hard to get right.
 Here is the copy of my working config:
